@@ -28,8 +28,7 @@ otherwise point the apex/`www` records at the Pages target Cloudflare shows you.
 
 ```
 index.html                  Entire site: all 8 pages, routing, styles, content
-Placeholder.dc.html         Image/placeholder tile component
-support.js                  Runtime that renders the components (required)
+support.js                  Runtime that renders the page (required)
 uploads/                    Photography, logos, maps
 _headers                    Security + cache headers (Cloudflare Pages)
 _redirects                  Serves index.html for all routes
@@ -74,6 +73,14 @@ entry in the `team` array. Until then those cards show a placeholder tile.
 Both forms are front-end only — they validate and show a confirmation state but do
 not submit anywhere yet. To make them live, wire the submit handlers to a form
 endpoint (Cloudflare Pages Functions, Formspree, Basin, etc.).
+
+## Viewing locally
+
+Double-clicking `index.html` works. If you prefer a local server:
+
+```
+npx serve .
+```
 
 ## Notes
 
