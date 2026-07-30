@@ -1,0 +1,2 @@
+# SPA-style hash routing is handled client-side; send unknown paths to the root.
+/*  /index.html  200
