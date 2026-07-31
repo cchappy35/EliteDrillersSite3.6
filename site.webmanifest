@@ -1,0 +1,29 @@
+{
+  "name": "Elite Drillers Services Corp",
+  "short_name": "Elite Drillers",
+  "description": "Water well drilling, pump service and rehabilitation from Midland, Texas.",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/uploads/favicon-64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#5c4738",
+  "background_color": "#ffffff",
+  "display": "browser",
+  "lang": "en-US"
+}

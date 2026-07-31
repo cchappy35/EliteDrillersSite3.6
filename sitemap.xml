@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://elitedrillers.com/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/hero-rig.jpg</image:loc>
+      <image:title>Elite Drillers crew working a water well rig</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/crew-on-site.jpg</image:loc>
+      <image:title>Elite Drillers crew on site in the Permian Basin</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/rig-detail.jpg</image:loc>
+      <image:title>Elite Drillers drill rig</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/equipment-lineup.jpg</image:loc>
+      <image:title>Elite Drillers pump service truck</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/og-card.jpg</image:loc>
+      <image:title>Elite Drillers Services Corp</image:title>
+    </image:image>
+  </url>
+</urlset>
