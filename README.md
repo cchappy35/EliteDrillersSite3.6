@@ -167,21 +167,29 @@ not a settings toggle — ask and it can be done.
 
 ## Forms
 
-Both forms email **cole@tomorrowdigitalmarketing.com** through
-[FormSubmit](https://formsubmit.co) — no account, no API key, no server.
+Both forms send through [FormSubmit](https://formsubmit.co) — no account, no
+API key, no server. FormSubmit takes ONE address in the endpoint and CCs the
+rest.
 
-**One-time activation:** the first submission to a new address triggers a
-confirmation email from FormSubmit. Click the link in it once and every
-submission after that is delivered silently. Until that click, submissions
-are held. Test both forms once after deploying.
+| Form | Primary recipient | CC'd |
+| --- | --- | --- |
+| Quote request | estimates@elitedrillers.com | chad@, bliss@, caleb@ |
+| Job application | careers@elitedrillers.com | chad@, bliss@ |
+
+**One-time activation:** the first submission to each new primary address
+triggers a confirmation email from FormSubmit. Click the link in it once and
+every submission after that is delivered silently. Until that click,
+submissions are held. So expect TWO confirmation emails — one at
+estimates@ and one at careers@ — and test both forms after deploying.
 
 | Form | How it sends | Where it lands |
 | --- | --- | --- |
-| Quote request (Contact) | `fetch` POST, stays on the page and shows an inline confirmation | Email, with the chip answers (Project Type / Service / Timeline) included |
+| Quote request (Contact) | `fetch` POST, stays on the page and shows an inline confirmation | Email, with the chip answers (Project Type / Service / Timeline) and the optional budget included |
 | Job application (Careers) | Standard form POST so the résumé file attaches | Email with the résumé attached, then redirects to `/thanks.html` |
 
-To change the recipient, search `index.html` for `formsubmit.co` — it appears
-twice (once in the careers form `action`, once in `FORM_ENDPOINT`).
+To change recipients, search `index.html` for `formsubmit.co` (the endpoint
+appears twice: the careers form `action` and `FORM_ENDPOINT`) and for `_cc`
+(the careers hidden field and `FORM_CC`).
 
 **If the domain changes**, update the careers form's `_next` hidden field —
 it currently points at `https://elitedrillers.com/thanks.html`. FormSubmit
@@ -208,7 +216,9 @@ No other file needs touching. The same pattern applies to the FAQ
 
 Both maps are inline SVG generated from US Census boundary data (via
 `us-atlas`), simplified with Ramer-Douglas-Peucker and hand-tuned for label
-placement. They are vector, so they stay sharp at any size and on any
+placement. The service-area map shows two tiers: TX / NM / OK / NV filled
+solid as licensed states, and LA / MS / AR / KS / AZ in a lighter fill as the
+surrounding region served. They are vector, so they stay sharp at any size and on any
 display, they use the site's own fonts and brand colours, and together they
 weigh ~15 KB instead of ~670 KB as images.
 
