@@ -1,236 +1,255 @@
 # Elite Drillers Services Corp — Website
 
-Static marketing site for Elite Drillers Services Corp (Midland, TX). No build step,
-no dependencies, no framework install. Deploys to Cloudflare Pages as-is.
+Static marketing site for Elite Drillers Services Corp (Midland, TX). No build
+step, no dependencies, no framework install. Deploys to Cloudflare Pages as-is.
 
 ## Deploying to Cloudflare Pages
 
-1. Push this folder to a GitHub repository (it can be the repo root, or a subfolder).
-2. In the Cloudflare dashboard: **Workers & Pages → Create → Pages → Connect to Git**.
-3. Select the repository and use these build settings:
+1. Push this folder's **contents** to a GitHub repository root.
+2. Cloudflare dashboard: **Workers & Pages → Create → Pages → Connect to Git**.
+3. Build settings:
 
-   | Setting                | Value                              |
-   |------------------------|------------------------------------|
-   | Framework preset       | None                               |
-   | Build command          | *(leave empty)*                    |
-   | Build output directory | `/` (or `site` if nested)          |
-   | Root directory         | *(leave empty, or `site`)*         |
+   | Setting                | Value           |
+   |------------------------|-----------------|
+   | Framework preset       | None            |
+   | Build command          | *(leave empty)* |
+   | Build output directory | `/`             |
+   | Root directory         | *(leave empty)* |
 
-4. Save and Deploy. Cloudflare serves `index.html` at the root.
+4. Save and Deploy. Production branch is `main`; every push auto-deploys.
+
+Cloudflare picks up `functions/` automatically — no configuration needed, but
+the environment variables and bindings below must exist or the forms will fail.
 
 ### Custom domain
 
 Pages project → **Custom domains → Set up a domain** → `elitedrillers.com`.
-If the domain's DNS is already on Cloudflare the records are created automatically;
-otherwise point the apex/`www` records at the Pages target Cloudflare shows you.
 
 ## File map
 
 ```
-index.html                  Entire site: all 8 pages, routing, styles, content
-support.js                  Runtime that renders the page (required)
-uploads/                    Photography, logos, maps
-404.html                    Branded not-found page (Cloudflare serves automatically)
-thanks.html                 Post-application confirmation page
-robots.txt                  Crawler rules + sitemap pointer
-sitemap.xml                 Sitemap with image entries
+index.html                  Homepage
+about/                      One fully-rendered static index.html per page
+drilling-services/
+service-area/
+careers/
+water-well-faq/
+reviews/
+contact/
+functions/api/quote.js      POST /api/quote      — quote request handler
+functions/api/careers.js    POST /api/careers    — job application handler
+functions/api/_intake.js    Shared gates (not routed; leading underscore)
+site.js                     Mobile menu, quote-form chips, form submission
+uploads/                    Photography, logos, social card
+404.html                    Branded not-found page (served automatically)
+quote-received.html         Post-quote confirmation
+thanks.html                 Post-application confirmation
+robots.txt · sitemap.xml    Crawler rules and sitemap
 favicon.png                 512px favicon (logo mark, white on brown)
 apple-touch-icon.png        180px iOS home-screen icon
 site.webmanifest            Icon/theme metadata
-_headers                    Security + cache headers (Cloudflare Pages)
+_headers                    Security + cache headers
 ```
 
-## Pages
+## Pages and URLs
 
-Routing is hash-based and client-side (`#home`, `#services`, `#area`, `#about`,
-`#reviews`, `#faq`, `#careers`, `#contact`). Reviews is reachable by link and by URL
-but is intentionally not in the header navigation.
+Eight real paths, each a separate static HTML file that renders fully without
+JavaScript:
+
+| Page | URL |
+| --- | --- |
+| Home | `/` |
+| About | `/about/` |
+| Services | `/drilling-services/` |
+| Service Area | `/service-area/` |
+| Careers | `/careers/` |
+| FAQ | `/water-well-faq/` |
+| Reviews | `/reviews/` |
+| Contact | `/contact/` |
+
+Reviews is reachable by link and by URL but is intentionally not in the header
+navigation. Legacy `#hash` links still work — the homepage redirects
+`#services` → `/drilling-services/`, `#faq` → `/water-well-faq/`, and so on.
 
 ## Editing content
 
-All copy, service descriptions, team members, reviews and FAQs live in the
-`class Component extends DCLogic` script block near the bottom of `index.html` —
-look for the `sd`, `team`, `reviews`, `faqs`, `stats` and `specBar` arrays.
-Page markup is the HTML above it.
+Each page owns its own markup and copy — edit it on the page it appears on.
+The header and footer are repeated in every file, so a global change means a
+find-and-replace across the eight `index.html` files.
+
+Open roles live in `careers/index.html` as a list of rows; the same job titles
+also populate the application form's `<select>`, so update both together.
+
+## Form backends (Pages Functions)
+
+Both forms POST to a Pages Function instead of to a third party directly, so
+no destination address appears in the page source.
+
+| Form | Route | Handler | Success page |
+| --- | --- | --- | --- |
+| Quote request | `/api/quote` | `functions/api/quote.js` | `/quote-received.html` |
+| Job application | `/api/careers` | `functions/api/careers.js` | `/thanks.html` |
+
+Shared gates live in `functions/api/_intake.js` (the leading underscore keeps
+Pages from routing it). Both routes run the same pipeline, cheapest rejection
+first:
+
+1. **Honeypot** — a filled `_honey` field returns a normal 200; nothing is
+   stored or sent.
+2. **Rate limit** — 5 submissions per IP per hour, counted separately per
+   route in KV. KV counters are eventually consistent, so a burst may squeeze
+   through one or two extra; acceptable at this volume.
+3. **Turnstile** — token verified server-side against Cloudflare's siteverify
+   endpoint. Failure returns a human-readable message and resets the widget.
+4. **Durable write** — the submission is recorded in KV *before* any email, so
+   a bounced or spam-filtered email cannot lose a lead.
+5. **Email** — sent via FormSubmit's JSON endpoint. Failures are logged, not
+   shown to the visitor, because the record is already safe.
+
+### Resumes
+
+The careers form takes plain fields only — no upload, so nothing is stored as
+a blob and no object storage is needed. The form, the confirmation page and
+the notification email all invite the applicant to email a resume directly to
+the careers address.
+
+Applications carry triage fields (position, years of experience, CDL status,
+licenses, equipment run) so a candidate can be judged without one. The
+notification subject line leads with position and experience.
+
+### Cloudflare setup (project `elitedrillerssite3-6`)
+
+Environment variables — **Settings → Environment variables**:
+
+| Name | Value | Type |
+| --- | --- | --- |
+| `QUOTE_EMAIL` | `estimates@elitedrillers.com` | plaintext |
+| `QUOTE_CC` | `chad@…,bliss@…,caleb@…` | plaintext, optional |
+| `CAREERS_EMAIL` | `careers@elitedrillers.com` | plaintext |
+| `CAREERS_CC` | `chad@…,bliss@…` | plaintext, optional |
+| `TURNSTILE_SECRET` | Turnstile secret key | **secret** |
+
+Bindings — **Settings → Bindings**:
+
+| Type | Variable name | Purpose |
+| --- | --- | --- |
+| Workers KV | `LEADS` | submission records + rate-limit counters |
+
+One Turnstile widget covers both forms — it is scoped to the domain, not the
+form. The site key (`0x4AAAAAAEfUn9VNzNqAq4gT`) is already in
+`contact/index.html` and `careers/index.html`. The matching **secret** key
+goes in the `TURNSTILE_SECRET` environment variable.
+
+Reading submissions: dashboard → **KV → LEADS**. Keys are prefixed `lead:` for
+quote requests and `application:` for job applications, each carrying an ISO
+timestamp.
+
+**FormSubmit activation:** the first submission to a new address triggers a
+confirmation email from FormSubmit. Click the link once per address
+(`estimates@` and `careers@`) or submissions are held.
 
 ## Replacing photos
 
-Drop a new file into `uploads/` using the same filename to swap an image in place.
-Current filenames:
+Drop a new file into `uploads/` using the same filename to swap an image in
+place.
 
-- `hero-rig.jpg` — homepage hero (portrait, 4:5)
+- `service-geotechnical-coring.jpg` — homepage hero (portrait, 3:4)
+- `hero-rig.jpg` — geotechnical block on the services page
 - `service-water-well-drilling.jpg`, `service-pump-service.jpg`,
-  `service-well-rehabilitation.jpg`, `service-environmental-drilling.jpg`,
-  `service-geotechnical-coring.jpg` — services page (landscape, 4:3)
+  `service-well-rehabilitation.jpg`, `service-environmental-drilling.jpg`
+  — services page (landscape, 4:3)
 - `equipment-lineup.jpg`, `rig-detail.jpg` — equipment section (3:2)
 - `crew-on-site.jpg` — about page (4:3)
-- `team-bliss-jung.jpg` — headshot (square)
-- `map-texas-service-area.png`, `map-midland-tx.png` — generated maps
+- `team-bliss-jung.jpg`, `team-reid-wagner.jpg`, `team-bo-atkins.jpg`,
+  `team-cynthia-masters.jpg` — headshots (square)
+- `og-card.jpg` — social share card (1200×630)
 
 ### Still needed
 
-Headshots for Chad Fischer, Reid Wagner, Caleb Gregory, Matt McCoy, Bo Atkins,
-Leslie White and Cynthia Masters. Add them as `uploads/team-first-last.jpg`
-(square, 2000px+) and add `src: "uploads/team-first-last.jpg"` to that person's
-entry in the `team` array. Until then those cards show a placeholder tile.
+Headshots for Chad Fischer, Caleb Gregory, Matt McCoy and Leslie White. Add
+them as `uploads/team-first-last.jpg` (square, 2000px+) and point that
+person's card at the new file in `about/index.html`. Until then those cards
+show a silhouette placeholder.
 
-## The contact & careers forms
+## Maps
 
-Both forms are front-end only — they validate and show a confirmation state but do
-not submit anywhere yet. To make them live, wire the submit handlers to a form
-endpoint (Cloudflare Pages Functions, Formspree, Basin, etc.).
+Both maps are inline SVG generated from US Census boundary data, simplified
+with Ramer-Douglas-Peucker and hand-tuned for label placement. They are
+vector, use the site's own fonts and brand colours, and together weigh ~15 KB
+instead of ~670 KB as images. Standalone copies live at
+`uploads/map-service-area.svg` and `uploads/map-midland-locator.svg`.
 
 ## Image sizes
 
-Photos in `uploads/` are web-optimized (1000–1600px, JPEG q82, ~50–320 KB each;
-~2.5 MB for the whole folder). **Do not commit straight-from-camera originals** —
-the first version of this repo had 6–12 MB files totalling 100 MB, which broke the
-deploy and would have made the site unusable on mobile data. Keep the masters
-somewhere else and export web copies at these sizes.
+Photos in `uploads/` are web-optimized (1000–1600px, JPEG q82, ~50–320 KB
+each). **Do not commit straight-from-camera originals** — the first version of
+this repo had 6–12 MB files totalling 100 MB, which broke the deploy. Keep the
+masters elsewhere and export web copies at these sizes.
 
-## If images don't load after deploying
+## SEO / metadata
 
-Open your deployed site and go straight to an image URL, e.g.
-`https://your-site.pages.dev/uploads/hero-rig.jpg`.
+Every page ships its own:
 
-- **404** → the `uploads/` folder didn't make it into the repo. This happens when
-  files are added through GitHub's web uploader. Confirm `uploads/` with all 15
-  files is visible in the repo on github.com, and that Cloudflare's **Build output
-  directory** points at the folder that contains `index.html`.
-- **The HTML page loads instead of the image** → a catch-all rewrite rule is
-  intercepting asset requests. Delete any `_redirects` file. This site is
-  hash-routed and does not need one.
-- **403** → check that the filename case matches exactly. All asset filenames here
-  are lowercase with hyphens.
-- **The image downloads as a tiny text file** → Git LFS is enabled for images in
-  this repo. Cloudflare Pages does not resolve LFS pointers. Run
-  `git lfs untrack "*.jpg" "*.png"`, remove the entries from `.gitattributes`,
-  then re-add and commit the images normally.
+- `<title>` and meta description
+- self-referencing `<link rel="canonical">` with no fragment
+- `og:*` and `twitter:*` tags, including the share card at
+  `uploads/og-card.jpg`
+- exactly one `<h1>` naming the page's subject
+- JSON-LD: LocalBusiness/GeneralContractor + WebSite on every page; FAQPage
+  only on `/water-well-faq/`
+
+Also site-wide: geo meta pointing at Midland, `lang="en"`, alt text on every
+image, lazy loading below the fold, `robots.txt`, `sitemap.xml`.
+
+Google Analytics 4 (tag `G-2VHV3C8P4V`) is installed on every page.
+
+### Before you go live
+
+1. **Domain.** Absolute URLs assume `https://elitedrillers.com`. If the live
+   domain differs, find-and-replace across the HTML files, `robots.txt` and
+   `sitemap.xml`.
+2. **Env vars and bindings** above (the Turnstile site key is already in place).
+3. **Google Business Profile.** The JSON-LD address, phone and hours must
+   match it exactly, or the two fight each other in local search. This is the
+   highest-value item for a Midland-area service business.
+4. **Search Console + Bing Webmaster.** Add the property, submit
+   `sitemap.xml`.
+
+## Accessibility & mobile
+
+- All tap targets are at least 44×44
+- Form inputs are 16px, which stops iOS from zooming on focus
+- Every form field has a real `<label>`; placeholders are examples only
+- The mobile drawer has an explicit close control, cannot appear at desktop
+  widths, and closes itself if the window is widened past 1024px
+- Both maps carry descriptive `aria-label`s
+- Responsive from 1920px desktop down to 360px phones
+
+## Troubleshooting images after deploy
+
+Go straight to an image URL, e.g. `https://your-site.pages.dev/uploads/hero-rig.jpg`.
+
+- **404** → the `uploads/` folder didn't make it into the repo. Confirm it is
+  visible on github.com and that the build output directory contains
+  `index.html`.
+- **HTML loads instead of the image** → a catch-all rewrite is intercepting
+  assets. Delete any `_redirects` file; this site doesn't need one.
+- **403** → filename case mismatch. All asset filenames are lowercase-hyphen.
+- **Downloads as a tiny text file** → Git LFS is tracking images and
+  Cloudflare Pages cannot resolve LFS pointers. Run
+  `git lfs untrack "*.jpg" "*.png"`, clear `.gitattributes`, re-commit.
 
 ## Viewing locally
 
-Double-clicking `index.html` works. If you prefer a local server:
+Static pages open fine by double-clicking, but the form routes need the Pages
+runtime:
 
 ```
-npx serve .
+npx wrangler pages dev .
 ```
 
 ## Notes
 
 - Fonts (Archivo, Barlow, Spline Sans Mono) load from Google Fonts at runtime.
-- The site is responsive from 1920px desktop down to 360px phones.
-- Licensing shown: drilling in TX · NM · OK, pump in TX.
-
-
-## SEO / metadata
-
-Baked into `index.html`:
-
-- Page title + meta description, rewritten per page as you navigate
-  (see `pageMeta()` in the app logic near the router)
-- Canonical URL, `og:*` and `twitter:*` tags, updated per page
-- Social share card at `uploads/og-card.jpg` (1200x630, brand card with
-  logo, tagline and phone number) — this is what appears when the link is
-  pasted into Facebook, LinkedIn, iMessage, Slack, etc.
-- Geo meta (`geo.region`, `geo.position`, `ICBM`) pointing at Midland
-- JSON-LD structured data: LocalBusiness/GeneralContractor with NAP, hours,
-  service area, service catalog and social profiles; WebSite; and FAQPage
-  built from the six FAQ answers (eligible for Google's FAQ rich results)
-- `robots.txt`, `sitemap.xml`, `site.webmanifest`, `404.html`
-- `lang="en"`, alt text on every image, lazy loading below the fold
-
-### Before you go live, update these
-
-1. **Domain.** Every absolute URL assumes `https://elitedrillers.com`. If the
-   live domain differs, find-and-replace it in `index.html`, `robots.txt`
-   and `sitemap.xml`.
-2. **Google Business Profile.** The JSON-LD address, phone and hours must match
-   your Google Business Profile exactly, or the two will fight each other in
-   local search. This is the single highest-value thing for a Midland-area
-   service business.
-3. **Search Console + Bing Webmaster.** Add the property and submit
-   `sitemap.xml`.
-4. **Analytics.** No tracking is installed. Drop your GA4 or Cloudflare Web
-   Analytics snippet just before `</head>`.
-
-### Known limitation: one indexable URL
-
-Navigation uses hash routing (`/#services`), so the whole site is one URL as
-far as search engines are concerned. Titles and descriptions swap correctly for
-browsers and social scrapers, but Google will only rank the homepage.
-
-If organic search matters, the fix is splitting the pages into real paths
-(`/services/`, `/about/`, `/contact/`) so each gets its own indexable URL and
-its own crawlable copy. That's a structural change to how the site is built,
-not a settings toggle — ask and it can be done.
-
-
-## Forms
-
-Both forms send through [FormSubmit](https://formsubmit.co) — no account, no
-API key, no server. FormSubmit takes ONE address in the endpoint and CCs the
-rest.
-
-| Form | Primary recipient | CC'd |
-| --- | --- | --- |
-| Quote request | estimates@elitedrillers.com | chad@, bliss@, caleb@ |
-| Job application | careers@elitedrillers.com | chad@, bliss@ |
-
-**One-time activation:** the first submission to each new primary address
-triggers a confirmation email from FormSubmit. Click the link in it once and
-every submission after that is delivered silently. Until that click,
-submissions are held. So expect TWO confirmation emails — one at
-estimates@ and one at careers@ — and test both forms after deploying.
-
-| Form | How it sends | Where it lands |
-| --- | --- | --- |
-| Quote request (Contact) | `fetch` POST, stays on the page and shows an inline confirmation | Email, with the chip answers (Project Type / Service / Timeline) and the optional budget included |
-| Job application (Careers) | Standard form POST so the résumé file attaches | Email with the résumé attached, then redirects to `/thanks.html` |
-
-To change recipients, search `index.html` for `formsubmit.co` (the endpoint
-appears twice: the careers form `action` and `FORM_ENDPOINT`) and for `_cc`
-(the careers hidden field and `FORM_CC`).
-
-**If the domain changes**, update the careers form's `_next` hidden field —
-it currently points at `https://elitedrillers.com/thanks.html`. FormSubmit
-requires an absolute URL there.
-
-## Editing open roles
-
-Open positions are a plain list in `index.html`. Search for `const roles = [`
-and edit, add or delete lines:
-
-```js
-{ title: "Water Well Driller", req: "TX / NM drilling license required", immediate: false },
-```
-
-- `title` — the job name (this also populates the application form's dropdown)
-- `req` — the one-line requirement shown underneath
-- `immediate: true` — adds the brown IMMEDIATE badge
-
-No other file needs touching. The same pattern applies to the FAQ
-(`const faqs = [`), reviews (`const reviews = [`) and the team
-(`const team = [`).
-
-## Maps
-
-Both maps are inline SVG generated from US Census boundary data (via
-`us-atlas`), simplified with Ramer-Douglas-Peucker and hand-tuned for label
-placement. The service-area map shows two tiers: TX / NM / OK / NV filled
-solid as licensed states, and LA / MS / AR / KS / AZ in a lighter fill as the
-surrounding region served. They are vector, so they stay sharp at any size and on any
-display, they use the site's own fonts and brand colours, and together they
-weigh ~15 KB instead of ~670 KB as images.
-
-Standalone copies live at `uploads/map-service-area.svg` and
-`uploads/map-midland-locator.svg` if you need them elsewhere. The generator
-is `maps-svg.html` in the project root (not part of the deployed site).
-
-## Accessibility & mobile
-
-- All tap targets are at least 44x44 (footer links, social buttons, form
-  chips, the menu button, the header call button)
-- Form inputs are 16px, which stops iOS from zooming when a field is focused
-- The mobile drawer has an explicit close control and cannot appear at
-  desktop widths; it also closes itself if the window is widened past 1024px
-- Both maps carry descriptive `aria-label`s; every photo has alt text
+- Licensing shown: drilling in TX · NM · OK · NV, pump in TX.
+- Insurance shown: $20MM insured, bonded to $20MM per project.

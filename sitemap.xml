@@ -3,28 +3,106 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://elitedrillers.com/</loc>
-    <lastmod>2026-07-31</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
     <image:image>
+      <image:loc>https://elitedrillers.com/uploads/service-geotechnical-coring.jpg</image:loc>
+      <image:title>Elite Drillers geotechnical drilling rig on site</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/og-card.jpg</image:loc>
+      <image:title>Elite Drillers Services Corp</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://elitedrillers.com/drilling-services/</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/service-water-well-drilling.jpg</image:loc>
+      <image:title>Water well drilling</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/service-pump-service.jpg</image:loc>
+      <image:title>Pump service and installation</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/service-well-rehabilitation.jpg</image:loc>
+      <image:title>Well rehabilitation</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/service-environmental-drilling.jpg</image:loc>
+      <image:title>Environmental drilling</image:title>
+    </image:image>
+    <image:image>
       <image:loc>https://elitedrillers.com/uploads/hero-rig.jpg</image:loc>
-      <image:title>Elite Drillers crew working a water well rig</image:title>
-    </image:image>
-    <image:image>
-      <image:loc>https://elitedrillers.com/uploads/crew-on-site.jpg</image:loc>
-      <image:title>Elite Drillers crew on site in the Permian Basin</image:title>
-    </image:image>
-    <image:image>
-      <image:loc>https://elitedrillers.com/uploads/rig-detail.jpg</image:loc>
-      <image:title>Elite Drillers drill rig</image:title>
+      <image:title>Geotechnical drilling</image:title>
     </image:image>
     <image:image>
       <image:loc>https://elitedrillers.com/uploads/equipment-lineup.jpg</image:loc>
       <image:title>Elite Drillers pump service truck</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://elitedrillers.com/uploads/og-card.jpg</image:loc>
-      <image:title>Elite Drillers Services Corp</image:title>
+      <image:loc>https://elitedrillers.com/uploads/rig-detail.jpg</image:loc>
+      <image:title>Elite Drillers Kenworth drill rig</image:title>
     </image:image>
+  </url>
+  <url>
+    <loc>https://elitedrillers.com/service-area/</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://elitedrillers.com/about/</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/crew-on-site.jpg</image:loc>
+      <image:title>Elite Drillers crew on site</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/team-bliss-jung.jpg</image:loc>
+      <image:title>Bliss Jung, Chief Executive Officer</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/team-reid-wagner.jpg</image:loc>
+      <image:title>Reid Wagner, VP of Operations</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/team-bo-atkins.jpg</image:loc>
+      <image:title>Bo Atkins, Environmental Drilling Superintendent</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://elitedrillers.com/uploads/team-cynthia-masters.jpg</image:loc>
+      <image:title>Cynthia Masters, Office Manager</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://elitedrillers.com/reviews/</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://elitedrillers.com/water-well-faq/</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://elitedrillers.com/careers/</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://elitedrillers.com/contact/</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
 </urlset>
