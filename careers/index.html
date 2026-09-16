@@ -350,7 +350,6 @@ img{max-width:100%;}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--signal); outline-offset:2px;}
 footer a:focus-visible,[data-footer-grid] a:focus-visible{outline:3px solid #ffffff; outline-offset:2px;}
 .edlink:hover{color: var(--ink)!important; box-shadow: inset 0 -1px 0 var(--ink)!important;}
-[data-video-section][hidden]{display:none!important;}
 </style>
 </head>
 <body>
@@ -443,14 +442,11 @@ footer a:focus-visible,[data-footer-grid] a:focus-visible{outline:3px solid #fff
       <h2 style="font-size: clamp(34px,4.6vw,58px); max-width: 880px; margin-bottom: 24px;">We're only as good as our people, and we're hiring.</h2>
       <p style="font-size: 19px; color: var(--ink2); max-width: 740px; margin-bottom: 52px;">A Texas-based specialty drilling company that takes pride in doing it right. Work hard, learn from a crew with decades of experience, and take pride in your work.</p>
 
-      <!-- VIDEO · revealed by script only when the file exists -->
-      <section data-video-section hidden style="padding: 0 0 64px;">
+      <!-- VIDEO -->
+      <section style="padding: 0 0 64px;">
         <div style="font-family: 'Spline Sans Mono',monospace; font-size: 12px; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px;">Working here</div>
-        <div data-video-slot style="position: relative; width: 100%; aspect-ratio: 16 / 9; background: var(--paper2); border: 1px solid var(--line); overflow: hidden;">
-          <video data-video controls preload="none" playsinline poster="../uploads/crew-on-site.jpg" width="1600" height="900" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; background: #141414;">
-            <source src="../uploads/careers-video.mp4" type="video/mp4">
-            Your browser can't play this video. <a href="../uploads/careers-video.mp4" style="color: var(--signal);">Download it instead</a>.
-          </video>
+        <div style="position: relative; width: 100%; aspect-ratio: 16 / 9; background: #141414; border: 1px solid var(--line); overflow: hidden;">
+          <iframe src="https://www.youtube-nocookie.com/embed/QdYmZdVIY34?autoplay=1&amp;mute=1&amp;loop=1&amp;playlist=QdYmZdVIY34&amp;rel=0&amp;modestbranding=1&amp;playsinline=1" title="Working at Elite Drillers" width="1600" height="900" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block;"></iframe>
         </div>
       </section>
       <div style="display: grid; grid-template-columns: 1.1fr .9fr; gap: 56px; align-items: start;" data-careers-grid>
@@ -554,29 +550,5 @@ footer a:focus-visible,[data-footer-grid] a:focus-visible{outline:3px solid #fff
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script src="../site.js" defer></script>
 
-<script>
-// Video sections ship hidden and are revealed only once the MP4 is confirmed
-// present, so a deploy made before the files are supplied shows nothing at all
-// rather than an empty frame or a TODO. A HEAD request avoids the console
-// resource error that a missing <source> would otherwise log on every load.
-(function(){
-  document.querySelectorAll('[data-video-section]').forEach(function(section){
-    var v = section.querySelector('[data-video]');
-    var src = v && v.querySelector('source');
-    if (!src) return;
-    var url = src.getAttribute('src');
-    fetch(url, { method: 'HEAD' })
-      .then(function(r){
-        if (!r.ok) return;
-        var type = r.headers.get('content-type') || '';
-        if (type && type.indexOf('video') !== 0 && type.indexOf('octet-stream') < 0) return;
-        section.removeAttribute('hidden');
-        v.setAttribute('preload', 'metadata');
-        v.load();
-      })
-      .catch(function(){ /* absent or unreachable: stay hidden */ });
-  });
-})();
-</script>
 </body>
 </html>

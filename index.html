@@ -331,7 +331,6 @@ img{max-width:100%;}
 .edskip:focus{left: 0!important; color: #fff!important;}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--signal); outline-offset:2px;}
 footer a:focus-visible,[data-footer-grid] a:focus-visible{outline:3px solid #ffffff; outline-offset:2px;}
-[data-video-section][hidden]{display:none!important;}
 </style>
 </head>
 <body>
@@ -463,14 +462,11 @@ footer a:focus-visible,[data-footer-grid] a:focus-visible{outline:3px solid #fff
       </section>
 
 
-      <!-- VIDEO · revealed by script only when the file exists -->
-      <section data-video-section hidden style="max-width: 1180px; margin: 0 auto; padding: 0 24px 96px;">
+      <!-- VIDEO -->
+      <section style="max-width: 1180px; margin: 0 auto; padding: 0 24px 96px;">
         <div style="font-family: 'Spline Sans Mono',monospace; font-size: 12px; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px;">On the job</div>
-        <div data-video-slot style="position: relative; width: 100%; aspect-ratio: 16 / 9; background: var(--paper2); border: 1px solid var(--line); overflow: hidden;">
-          <video data-video controls preload="none" playsinline poster="uploads/hero-rig.jpg" width="1600" height="900" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; background: #141414;">
-            <source src="uploads/home-video.mp4" type="video/mp4">
-            Your browser can't play this video. <a href="uploads/home-video.mp4" style="color: var(--signal);">Download it instead</a>.
-          </video>
+        <div style="position: relative; width: 100%; aspect-ratio: 16 / 9; background: #141414; border: 1px solid var(--line); overflow: hidden;">
+          <iframe src="https://www.youtube-nocookie.com/embed/BSaJ-vC9Tvo?autoplay=1&amp;mute=1&amp;loop=1&amp;playlist=BSaJ-vC9Tvo&amp;rel=0&amp;modestbranding=1&amp;playsinline=1" title="Elite Drillers crew and rigs on the job" width="1600" height="900" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block;"></iframe>
         </div>
       </section>
       <!-- SERVICES INDEX -->
@@ -640,29 +636,5 @@ footer a:focus-visible,[data-footer-grid] a:focus-visible{outline:3px solid #fff
 </div>
 <script src="site.js" defer></script>
 
-<script>
-// Video sections ship hidden and are revealed only once the MP4 is confirmed
-// present, so a deploy made before the files are supplied shows nothing at all
-// rather than an empty frame or a TODO. A HEAD request avoids the console
-// resource error that a missing <source> would otherwise log on every load.
-(function(){
-  document.querySelectorAll('[data-video-section]').forEach(function(section){
-    var v = section.querySelector('[data-video]');
-    var src = v && v.querySelector('source');
-    if (!src) return;
-    var url = src.getAttribute('src');
-    fetch(url, { method: 'HEAD' })
-      .then(function(r){
-        if (!r.ok) return;
-        var type = r.headers.get('content-type') || '';
-        if (type && type.indexOf('video') !== 0 && type.indexOf('octet-stream') < 0) return;
-        section.removeAttribute('hidden');
-        v.setAttribute('preload', 'metadata');
-        v.load();
-      })
-      .catch(function(){ /* absent or unreachable: stay hidden */ });
-  });
-})();
-</script>
 </body>
 </html>

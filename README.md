@@ -166,41 +166,28 @@ place.
 
 ### Videos
 
-Two video slots are in place, both self-hosted MP4 with click-to-play controls:
+Two YouTube embeds, autoplaying muted on loop:
 
-| Page | File | Poster |
+| Page | Video | Section heading |
 | --- | --- | --- |
-| Home (between the stat tiles and the services list) | `uploads/home-video.mp4` | `uploads/hero-rig.jpg` |
-| Careers (above the open roles) | `uploads/careers-video.mp4` | `uploads/crew-on-site.jpg` |
+| Home (between the stat tiles and the services list) | `BSaJ-vC9Tvo` | On the job |
+| Careers (above the open roles) | `QdYmZdVIY34` | Working here |
 
-**Both sections ship hidden.** An inline script sends a `HEAD` request for the
-MP4 on page load and reveals the section only if the file is actually there.
-So the site can deploy before the videos exist and a visitor sees nothing —
-no empty frame, no placeholder, no console error. Drop the file into
-`uploads/` with the exact name above and the section appears on its own; no
-markup change and nothing to switch on.
+Served from `youtube-nocookie.com` with `rel=0` and `modestbranding=1`, so no
+related-video grid at the end and no tracking cookie until the visitor
+interacts. `loading="lazy"` means the player only loads as the section nears
+the viewport.
 
-**Encoding.** Cloudflare Pages caps a single file at 25 MB, so keep each clip
-to roughly 30 seconds at 1080p: H.264 / AAC, MP4 container, ~2.5 Mbps video.
-For example:
+Autoplay is muted — browsers block sound without a click, and the player's
+unmute control handles that. Looping needs `playlist=<same id>` alongside
+`loop=1`; that is not a mistake, it is how the YouTube API does single-video
+loops.
 
-```
-ffmpeg -i source.mov -t 30 -vf scale=1920:-2 -c:v libx264 -crf 24 \
-  -preset slow -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart \
-  uploads/home-video.mp4
-```
-
-`-movflags +faststart` matters — without it the video won't begin playing
-until the whole file has downloaded.
-
-If a clip needs to be longer than ~30 seconds, don't raise the bitrate ceiling
-— switch that slot to a YouTube/Vimeo iframe or Cloudflare Stream instead. To
-swap to an embed, replace the `<video>` element inside `[data-video-slot]`
-with the iframe and delete the `[data-video-missing]` sibling.
-
-Custom poster images are optional; the current ones are existing site photos.
-A dedicated frame grab usually looks better:
-`ffmpeg -i clip.mp4 -ss 2 -vframes 1 uploads/home-video-poster.jpg`
+**To swap a video:** replace the ID in BOTH places in the `src` (the path and
+the `playlist` parameter) and update the `title` attribute. Nothing else to
+change. No files live in the repo, so there is no size limit and Bliss can
+replace a video on YouTube without a redeploy as long as the URL stays the
+same.
 
 ### Still needed
 
