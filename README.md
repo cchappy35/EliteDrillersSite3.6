@@ -164,9 +164,47 @@ place.
   `team-cynthia-masters.jpg` — headshots (square)
 - `og-card.jpg` — social share card (1200×630)
 
+### Videos
+
+Two video slots are in place, both self-hosted MP4 with click-to-play controls:
+
+| Page | File | Poster |
+| --- | --- | --- |
+| Home (between the stat tiles and the services list) | `uploads/home-video.mp4` | `uploads/hero-rig.jpg` |
+| Careers (above the open roles) | `uploads/careers-video.mp4` | `uploads/crew-on-site.jpg` |
+
+**Both sections ship hidden.** An inline script sends a `HEAD` request for the
+MP4 on page load and reveals the section only if the file is actually there.
+So the site can deploy before the videos exist and a visitor sees nothing —
+no empty frame, no placeholder, no console error. Drop the file into
+`uploads/` with the exact name above and the section appears on its own; no
+markup change and nothing to switch on.
+
+**Encoding.** Cloudflare Pages caps a single file at 25 MB, so keep each clip
+to roughly 30 seconds at 1080p: H.264 / AAC, MP4 container, ~2.5 Mbps video.
+For example:
+
+```
+ffmpeg -i source.mov -t 30 -vf scale=1920:-2 -c:v libx264 -crf 24 \
+  -preset slow -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart \
+  uploads/home-video.mp4
+```
+
+`-movflags +faststart` matters — without it the video won't begin playing
+until the whole file has downloaded.
+
+If a clip needs to be longer than ~30 seconds, don't raise the bitrate ceiling
+— switch that slot to a YouTube/Vimeo iframe or Cloudflare Stream instead. To
+swap to an embed, replace the `<video>` element inside `[data-video-slot]`
+with the iframe and delete the `[data-video-missing]` sibling.
+
+Custom poster images are optional; the current ones are existing site photos.
+A dedicated frame grab usually looks better:
+`ffmpeg -i clip.mp4 -ss 2 -vframes 1 uploads/home-video-poster.jpg`
+
 ### Still needed
 
-Headshots for Chad Fischer, Caleb Gregory, Matt McCoy and Leslie White. Add
+Headshots for Chad Fischer, Caleb Gregory, Larry Keith and Leslie White. Add
 them as `uploads/team-first-last.jpg` (square, 2000px+) and point that
 person's card at the new file in `about/index.html`. Until then those cards
 show a silhouette placeholder.
@@ -251,5 +289,5 @@ npx wrangler pages dev .
 ## Notes
 
 - Fonts (Archivo, Barlow, Spline Sans Mono) load from Google Fonts at runtime.
-- Licensing shown: drilling in TX · NM · OK · NV, pump in TX.
+- Licensing shown: drilling in TX · NM · OK, pump in TX. TX driller license #1988.
 - Insurance shown: $20MM insured, bonded to $20MM per project.
